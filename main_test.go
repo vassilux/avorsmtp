@@ -5,6 +5,7 @@ import (
 )
 
 func Test_SmtpWorker(t *testing.T) {
+	loadLogger()
 	smtpWorker := NewSmtpWorker()
 	event := Event{
 		AppId:      "vorimport",
@@ -14,10 +15,10 @@ func Test_SmtpWorker(t *testing.T) {
 		Data:       "Application stopped : 2",
 	}
 
-	to := []string{"v.gontcharov@gmail.com", "vassili.gontcharov@esifrance.net"}
-	emailUser := &EmailUser{"v.gontcharov@gmail.com", "v@s184027_rep", "smtp.gmail.com", 587}
+	to := []string{"vassili.gontcharov@esifrance.net", "v.gontcharov@gmail.com"}
+	//emailUser := &EmailUser{"v.gontcharov@gmail.com", "v@s184027_rep", "smtp.gmail.com", 587}
 
-	//emailUser := &EmailUser{"vassili.gontcharov@esifrance.net", "vas184027", "mail.esifrance.net", 465}
+	emailUser := &EmailUser{"vassili.gontcharov@esifrance.net", "vas184027", "192.168.3.250", 25}
 
 	err := smtpWorker.send(emailUser, to, event)
 	if err != nil {
@@ -26,6 +27,8 @@ func Test_SmtpWorker(t *testing.T) {
 }
 
 func Test_SmtpWorkerSSL(t *testing.T) {
+	loadLogger()
+
 	smtpWorker := NewSmtpWorker()
 	event := Event{
 		AppId:      "vorimport",

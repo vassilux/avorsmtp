@@ -6,16 +6,14 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
-	//"labix.org/v2/mgo/bson"
-	"log"
+	log "github.com/cihub/seelog"
+	"html/template"
 	"math/big"
-	//"net"
+	"net"
 	"net/mail"
 	"net/smtp"
-
-	//"strconv"
-	"html/template"
 	"strings"
 )
 
@@ -84,15 +82,36 @@ func encodeRFC2047(String string) string {
 	return strings.Trim(addr.String(), " <>")
 }
 
-type fakeAuth struct {
+type unencryptedAuth struct {
 	smtp.Auth
 }
 
-func (a fakeAuth) Start(server *smtp.ServerInfo) (string, []byte,
-	error) {
-	server.TLS = true
-	log.Printf("fakeAuth server name %s \n", server.Name)
-	return a.Auth.Start(server)
+func (a unencryptedAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	s := *server
+	s.TLS = false
+	log.Debugf("unencryptedAuth %s %s.", s.TLS, a.Auth)
+	return a.Auth.Start(&s)
+}
+
+type superPlainAuth struct {
+	username string
+	password string
+}
+
+func SuperPlainAuth(username string, password string) smtp.Auth {
+	return &superPlainAuth{username, password}
+}
+
+func (a *superPlainAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	resp := []byte("" + "\x00" + a.username + "\x00" + a.password)
+	return "PLAIN", resp, nil
+}
+
+func (a *superPlainAuth) Next(fromServer []byte, more bool) ([]byte, error) {
+	if more {
+		return nil, errors.New("unexpected server challenge")
+	}
+	return nil, nil
 }
 
 type SmtpWorker struct {
@@ -109,12 +128,12 @@ func (smtpWorker *SmtpWorker) buildEmailMessage(event Event) (message []byte, er
 	tj := template.New("jsonTemplate")
 	tj, err = tj.Parse(jsonTemplate)
 	if err != nil {
-		log.Print("error trying to parse mail template")
+		log.Debug("error trying to parse mail template")
 		return nil, err
 	}
 	err = tj.ExecuteTemplate(&docJson, "jsonTemplate", template.HTML(event.Json()))
 	if err != nil {
-		log.Print("error trying to execute mail template")
+		log.Debug("error trying to execute mail template")
 		return nil, err
 	}
 
@@ -122,8 +141,11 @@ func (smtpWorker *SmtpWorker) buildEmailMessage(event Event) (message []byte, er
 }
 
 func (smtpWorker *SmtpWorker) send(emailUser *EmailUser, to []string, event Event) (err error) {
+
 	if emailUser.Port == 465 {
-		return smtpWorker.sendMailSSL(emailUser, to, event)
+		return smtpWorker.sendMailTLS(emailUser, to, event)
+	} else if emailUser.Port == 25 {
+		return smtpWorker.sendMailPlain(emailUser, to, event)
 	} else {
 		return smtpWorker.sendMail(emailUser, to, event)
 	}
@@ -131,15 +153,20 @@ func (smtpWorker *SmtpWorker) send(emailUser *EmailUser, to []string, event Even
 
 func (smtpWorker *SmtpWorker) sendMail(emailUser *EmailUser, to []string, event Event) (err error) {
 
-	auth := smtp.PlainAuth("",
+	auth := smtp.PlainAuth(
+		"",
 		emailUser.Username,
 		emailUser.Password,
 		emailUser.EmailServer,
 	)
 
+	/*auth := SuperPlainAuth(emailUser.Username,
+	emailUser.Password)*/
+
+	log.Debugf("Send mail from %s %s:%d.", emailUser.Username, emailUser.EmailServer, emailUser.Port)
 	emailBody, err := smtpWorker.buildEmailMessage(event)
 	if err != nil {
-		log.Print("Failed build message from template.")
+		log.Errorf("Failed build message from template.")
 		return err
 	}
 
@@ -160,89 +187,182 @@ func (smtpWorker *SmtpWorker) sendMail(emailUser *EmailUser, to []string, event 
 	err = smtp.SendMail(serverAddr, auth, emailUser.Username,
 		to, []byte(message))
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Error send e-mail : %s", err)
 		return err
 	}
 
 	return nil
 }
 
-func (smtpWorker *SmtpWorker) sendMailSSL(emailUser *EmailUser, to []string, event Event) (err error) {
-	//
-	/*auth := fakeAuth{smtp.PlainAuth("",
+func (smtpWorker *SmtpWorker) sendMailPlain(emailUser *EmailUser, to []string, event Event) (err error) {
+
+	auth := smtp.PlainAuth(
+		"",
 		emailUser.Username,
 		emailUser.Password,
 		emailUser.EmailServer,
-	)}*/
+	)
+
+	/*auth := SuperPlainAuth(emailUser.Username,
+	emailUser.Password)*/
+
+	log.Debugf("Send plain mail from %s %s:%d.", emailUser.Username, emailUser.EmailServer, emailUser.Port)
+	emailBody, err := smtpWorker.buildEmailMessage(event)
+	if err != nil {
+		log.Errorf("Failed build message from template.")
+		return err
+	}
+
+	serverAddr := fmt.Sprintf("%s:%d", emailUser.EmailServer, emailUser.Port)
+
+	header := make(map[string]string)
+	header["From"] = emailUser.Username
+	header["Subject"] = encodeRFC2047(EMAIL_SUBJECT)
+	header["MIME-Version"] = "1.0"
+	header["Content-Type"] = "text/plain; charset=\"utf-8\""
+	header["Content-Transfer-Encoding"] = "base64"
+
+	message := ""
+	for k, v := range header {
+		message += fmt.Sprintf("%s: %s\r\n", k, v)
+	}
+	message += "\r\n" + base64.StdEncoding.EncodeToString(emailBody)
+
+	conn, err := net.Dial("tcp", serverAddr)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	client, err := smtp.NewClient(conn, emailUser.EmailServer)
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	defer client.Quit()
+	// Auth
+	if err = client.Auth(auth); err != nil {
+		log.Error(err)
+		return err
+	}
+
+	// From
+	if err = client.Mail(emailUser.Username); err != nil {
+		log.Error(err)
+		return err
+	}
+	// To
+	for _, addr := range to {
+		if err := client.Rcpt(addr); err != nil {
+			log.Errorf("Error: %s\n", err)
+			return err
+		}
+	}
+
+	// Data
+	w, err := client.Data()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	_, err = w.Write([]byte(message))
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	err = w.Close()
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+
+	return nil
+}
+
+func (smtpWorker *SmtpWorker) sendMailTLS(emailUser *EmailUser, to []string, event Event) (err error) {
 
 	auth := smtp.PlainAuth("",
 		emailUser.Username,
 		emailUser.Password,
 		emailUser.EmailServer,
 	)
+
+	log.Debugf("Send TLS mail from %s %s:%d.", emailUser.Username, emailUser.EmailServer, emailUser.Port)
+
 	var emailBody []byte
 	emailBody, err = smtpWorker.buildEmailMessage(event)
 	if err != nil {
-		log.Print("Failed build message from template.")
+		log.Debug("Failed build message from template.")
 		return err
 	}
+
+	/*tlsconfig := &tls.Config{
+		InsecureSkipVerify: true,
+		ServerName:         emailUser.EmailServer,
+	}*/
 
 	tlsconfig := new(tls.Config)
 	tlsconfig.Certificates = make([]tls.Certificate, 1)
 	tlsconfig.Certificates[0].Certificate = [][]byte{testRSACertificate}
 	tlsconfig.Certificates[0].PrivateKey = testRSAPrivateKey
 	tlsconfig.CipherSuites = []uint16{tls.TLS_RSA_WITH_RC4_128_SHA}
-	tlsconfig.InsecureSkipVerify = false
+	tlsconfig.InsecureSkipVerify = true
 	tlsconfig.MinVersion = tls.VersionSSL30
-	tlsconfig.MaxVersion = tls.VersionTLS10
+	tlsconfig.MaxVersion = tls.VersionTLS10 // try tls.VersionTLS10 if this doesn't work
+	tlsconfig.PreferServerCipherSuites = true
+	tlsconfig.ServerName = emailUser.EmailServer
 
 	serverAddr := fmt.Sprintf("%s:%d", emailUser.EmailServer, emailUser.Port)
 
 	conn, err := tls.Dial("tcp", serverAddr, tlsconfig)
 	if err != nil {
-		log.Printf("Error Dialing %s\n", err)
+		log.Errorf("Error Dialing %s\n", err)
 		return err
 	}
 
 	client, err := smtp.NewClient(conn, emailUser.EmailServer)
 	if err != nil {
-		log.Printf("Error SMTP connection: %s\n", err)
+		log.Errorf("Error SMTP connection: %s\n", err)
 		return err
 	}
 
+	defer client.Quit()
 	if ok, _ := client.Extension("STARTTLS"); ok {
 		if err = client.StartTLS(tlsconfig); err != nil {
-			log.Printf("Error performing StartTLS: %s\n", err)
+			log.Errorf("Error performing StartTLS: %s\n", err)
 			return err
 		}
 	}
 
 	if ok, _ := client.Extension("AUTH"); ok {
 		if err := client.Auth(auth); err != nil {
-			log.Printf("Error during AUTH %s\n", err)
+			log.Errorf("Error during AUTH %s\n", err)
 			return err
 		}
 	}
 
 	if err = client.Mail(emailUser.Username); err != nil {
-		log.Printf("Error: %s\n", err)
+		log.Errorf("Error: %s\n", err)
 		return err
 	}
 
 	for _, addr := range to {
 		if err := client.Rcpt(addr); err != nil {
-			log.Printf("Error: %s\n", err)
+			log.Errorf("Error: %s\n", err)
 			return err
 		}
 	}
 
 	w, err := client.Data()
 	if err != nil {
-		log.Printf("Error: %s\n", err)
+		log.Errorf("Error: %s\n", err)
 		return err
 	}
 
 	header := make(map[string]string)
+	header["From"] = emailUser.Username
 	header["Subject"] = encodeRFC2047(EMAIL_SUBJECT)
 	header["MIME-Version"] = "1.0"
 	header["Content-Type"] = "text/plain; charset=\"utf-8\""
@@ -256,19 +376,17 @@ func (smtpWorker *SmtpWorker) sendMailSSL(emailUser *EmailUser, to []string, eve
 
 	_, err = w.Write([]byte(message))
 	if err != nil {
-		log.Printf("Error: %s\n", err)
+		log.Errorf("Error: %s\n", err)
 		return err
 
 	}
 
 	err = w.Close()
 	if err != nil {
-		log.Printf("Error: %s\n", err)
+		log.Errorf("Error: %s\n", err)
 		return err
 
 	}
-
-	client.Quit()
 
 	return nil
 }
