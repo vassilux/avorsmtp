@@ -1,0 +1,13 @@
+{ 
+	"smtpServer": "smtp.gmail.com",
+	"smtpPort": 465,
+	"smtpUsername": "v.gontcharov@gmail.com",
+	"smtpPassword": "v@s184027_rep",
+	"subject": "AVOR event notification",
+	"schedule": 5,
+	"recipients": [
+		"vassili.gontcharov@esifrance.net",
+		"vgontcharov@gmail.com"
+	],
+	"mongoHost": "127.0.0.1"
+}
