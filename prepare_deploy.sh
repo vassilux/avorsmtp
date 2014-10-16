@@ -43,3 +43,4 @@ fi
 rm -rf "$DEPLOY_DIR"
 
 echo "Deploy build complete."
+echo "Live well"
