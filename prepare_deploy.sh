@@ -21,12 +21,15 @@ fi
 #
 #
 mkdir "$DEPLOY_DIR"
+mkdir "$DEPLOY_DIR/samples"
+mkdir "$DEPLOY_DIR/logs"
 
 cp -aR ./bin/* "$DEPLOY_DIR"
-cp -aR ./samples/* "$DEPLOY_DIR"
+cp -aR ./samples/* "${DEPLOY_DIR}/samples"
 #
 mkdir "$DEPLOY_DIR/docs"
 pandoc -o "$DEPLOY_DIR/docs/INSTALL.html" ./docs/INSTALL.md
+pandoc -o "$DEPLOY_DIR/docs/ReleaseNotes.html" ./docs/ReleaseNotes.md
 cp "$DEPLOY_DIR/docs/INSTALL.html" .
 
 tar cvzf "${DEPLOY_FILE_NAME}" "${DEPLOY_DIR}"
