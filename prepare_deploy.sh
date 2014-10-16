@@ -31,6 +31,7 @@ mkdir "$DEPLOY_DIR/docs"
 pandoc -o "$DEPLOY_DIR/docs/INSTALL.html" ./docs/INSTALL.md
 pandoc -o "$DEPLOY_DIR/docs/ReleaseNotes.html" ./docs/ReleaseNotes.md
 cp "$DEPLOY_DIR/docs/INSTALL.html" .
+cp "$DEPLOY_DIR/docs/ReleaseNotes.html" .
 
 tar cvzf "${DEPLOY_FILE_NAME}" "${DEPLOY_DIR}"
 
