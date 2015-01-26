@@ -3,14 +3,14 @@
         <exception filepattern="test*" minlevel="error"/>
     </exceptions>
     <outputs formatid="all">
-        <file path="./log/all.log"/>
+        <file path="./logs/all.log"/>
         <filter levels="info">
           <console formatid="fmtinfo"/>
-		  <file path="./log/infos.log"/>
+		  <file path="./logs/infos.log"/>
         </filter>
         <filter levels="error,critical" formatid="fmterror">
           <console/>
-          <file path="./log/errors.log"/>
+          <file path="./logs/errors.log"/>
         </filter>
     </outputs>
     <formats>

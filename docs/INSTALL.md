@@ -21,7 +21,7 @@ Vérifier si l'application est en cours d'execution via console de supervisor : 
 Si l'application est en court d'exécution arrêter l'application : stop avorsmtp
 Quitter le console : exit
 
-Crée un lien symbolic ln -s /opt/revor/avorsmtp_[version] /opt/avorsmtp/current 
+Crée un lien symbolic ln -s /opt/avorsmtp//avorsmtp_[version] /opt/avorsmtp/current 
 > **NOTE:**
 >
 > - En cas si le répertoire existe /opt/avorsmtp/current. Supprimer rm -rf /opt/avorsmtp/current
@@ -29,6 +29,9 @@ Crée un lien symbolic ln -s /opt/revor/avorsmtp_[version] /opt/avorsmtp/current
 ### Configuraiton
 Copier le fichier config.json de répértoire d'instalaltion dans le répértoire de l'application : cp ./samples/config.json config.json
 Copier le fichier logger.xml de répértoire d'instalaltion dans le répértoire de l'application : cp ./samples/logger.xml logger.xml
+
+### Note 
+	En cas d'utilsiaiton d'un serveur smtp sur le port 465 merci de voir la configuraiton de relay sur le serveur postfix.
 
 
 ### Mise à jour 

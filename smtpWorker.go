@@ -31,22 +31,11 @@ type SmtpTemplateData struct {
 }
 
 const (
-	emailTemplate = `
-Message : {{ .}}
-
-Sincerely,
-Barak Oubama
-`
-
 	jsonTemplate = `
 Message : {{ .}}
 
-
-Sincerely,
-Barak Oubama
-
 `
-	EMAIL_SUBJECT = "AVOR event notification"
+	EMAIL_SUBJECT = "avorsmtp notification"
 )
 
 // Code below from http://golang.org/src/pkg/crypto/tls/handshake_server_test.go

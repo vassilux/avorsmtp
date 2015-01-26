@@ -2,9 +2,15 @@ package main
 
 import (
 	//"labix.org/v2/mgo/bson"
+	"flag"
+	"fmt"
 	log "github.com/cihub/seelog"
 	"os"
 	"time"
+)
+
+const (
+	VERSION = "1.0.1"
 )
 
 var (
@@ -12,6 +18,7 @@ var (
 	mongoWorker      *MongoWorker
 	config           *Config
 	stopPocessEvents chan bool
+	version          = flag.Bool("version", false, "show version")
 )
 
 func loadLogger() {
@@ -88,6 +95,14 @@ func init() {
 }
 
 func main() {
+	flag.Parse()
+	//
+	if *version {
+		fmt.Printf("Version : %s\n", VERSION)
+		fmt.Println("Get fun! Live well !")
+		return
+	}
+
 	var err error
 	config, err = NewConfig()
 	if err != nil {
