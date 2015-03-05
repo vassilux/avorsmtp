@@ -30,6 +30,12 @@ Crée un lien symbolic ln -s /opt/avorsmtp//avorsmtp_[version] /opt/avorsmtp/cur
 Copier le fichier config.json de répértoire d'instalaltion dans le répértoire de l'application : cp ./samples/config.json config.json
 Copier le fichier logger.xml de répértoire d'instalaltion dans le répértoire de l'application : cp ./samples/logger.xml logger.xml
 
+Options de configuration de la connexion au serveur smtp
+
+	"InsecureSkipVerify" : certificat TLS n'est pas verififé si la valeur de l'option est égal à true
+	"UnencryptedAuth": force utiliser une connexion non sécuriser si la valeur de l'option est égal à true
+	"SkipAuth": procedure d'authentification n'est pas utilisé si la valeur de l'option est égal à true
+
 ### Note 
 	En cas d'utilsiaiton d'un serveur smtp sur le port 465 merci de voir la configuraiton de relay sur le serveur postfix.
 

@@ -7,14 +7,17 @@ import (
 )
 
 type Config struct {
-	SmtpServer   string
-	SmtpPort     int
-	SmtpUsername string
-	SmtpPassword string
-	Subject      string
-	MongoHost    string
-	Schedule     int
-	Recipients   []string
+	SmtpServer         string
+	SmtpPort           int
+	SmtpUsername       string
+	SmtpPassword       string
+	Subject            string
+	MongoHost          string
+	Schedule           int
+	Recipients         []string
+	InsecureSkipVerify bool
+	UnencryptedAuth    bool
+	SkipAuth           bool
 }
 
 func NewConfig() (config *Config, err error) {

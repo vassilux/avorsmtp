@@ -1,7 +1,6 @@
 package main
 
 import (
-	//"labix.org/v2/mgo/bson"
 	"flag"
 	"fmt"
 	log "github.com/cihub/seelog"
@@ -10,7 +9,7 @@ import (
 )
 
 const (
-	VERSION = "1.0.1"
+	VERSION = "X.X.X"
 )
 
 var (
@@ -66,7 +65,7 @@ func processEvents() {
 
 	log.Debugf("%d events to send.", len(events))
 	for _, event := range events {
-		log.Tracef("Sending event %s.", event.String())
+		log.Debugf("Sending event [%s].\n", event.String())
 		err = doSendMail(event)
 		if err != nil {
 			log.Criticalf(" Error : %s.", err)
@@ -77,7 +76,7 @@ func processEvents() {
 			log.Critical(" Error : %s.", err)
 			cleanup()
 		}
-		log.Tracef("event %s sent and deleted.", event.String())
+		log.Debugf("Event [%s] sent and deleted.\n", event.String())
 
 	}
 
@@ -110,7 +109,11 @@ func main() {
 		return
 	}
 
-	smtpWorker = NewSmtpWorker()
+	log.Tracef("Config InsecureSkipVerify  : [%v]", config.InsecureSkipVerify)
+
+	log.Tracef("Config UnencryptedAuth  : [%v]", config.UnencryptedAuth)
+
+	smtpWorker = NewSmtpWorker(config)
 	if smtpWorker == nil {
 		log.Criticalf("smtpWorker is nil.")
 		return
@@ -127,7 +130,7 @@ func main() {
 	stopPocessEvents = schedule(processEvents, durationTestCall)
 
 	for {
-		log.Info("Sleeping...")
-		time.Sleep(5000 * time.Second) //
+		log.Info("Start working hard...")
+		<-stopPocessEvents
 	}
 }

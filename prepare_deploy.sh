@@ -12,8 +12,28 @@ VER_MAJOR="1"
 VER_MINOR="0"
 VER_PATCH="1"
 
-DEPLOY_DIR="avorsmtp_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}"
-DEPLOY_FILE_NAME="avorsmtp_${VER_MAJOR}.${VER_MINOR}.${VER_PATCH}.tar.gz"
+VERSION=$(cat VERSION)
+
+cp main.go main.go.bkp
+
+sed -i "/VERSION = \"X.X.X\"/c\VERSION = \"${VERSION}\"" main.go
+
+make clean
+
+make fmt
+
+make
+
+if [ ! -f ./bin/avorsmtp ]; then
+	echo "Can not find compiled  project file ./bin/avorsmtp."
+	echo "Please cheque make output."
+    exit 1
+fi
+
+mv main.go.bkp main.go 
+
+DEPLOY_DIR="avorsmtp_${VERSION}"
+DEPLOY_FILE_NAME="avorsmtp_${VERSION}.tar.gz"
 
 if [ -d "$DEPLOY_DIR" ]; then
     rm -rf  "$DEPLOY_DIR"
@@ -41,6 +61,15 @@ if [ ! -f "$DEPLOY_FILE_NAME" ]; then
 fi
 
 rm -rf "$DEPLOY_DIR"
+
+if [ ! -d release ]; then
+	mkdir release
+fi
+
+mv INSTALL.html ./release
+mv ReleaseNotes.html ./release
+mv ${DEPLOY_FILE_NAME} ./release
+
 
 echo "Deploy build complete."
 echo "Live well"

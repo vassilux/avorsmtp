@@ -28,7 +28,8 @@ FMT_TEST = $(foreach int, $(SRC_LIST), $(int)_fmt)
  
 all: build
 build: $(BUILD_LIST)
-clean: $(CLEAN_LIST)
+clean: 
+	rm -f $(TARGET) 
 test: $(TEST_LIST)
 fmt: $(FMT_TEST)
 git:

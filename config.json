@@ -8,6 +8,10 @@
 	"recipients": [
 		"vassili.gontcharov@esifrance.net",
 		"vgontcharov@gmail.com"
+		
 	],
-	"mongoHost": "127.0.0.1"
+	"mongoHost": "127.0.0.1",
+	"InsecureSkipVerify" : true,
+	"UnencryptedAuth": true,
+	"SkipAuth": true
 }
