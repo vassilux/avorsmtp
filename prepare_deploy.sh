@@ -62,13 +62,13 @@ fi
 
 rm -rf "$DEPLOY_DIR"
 
-if [ ! -d release ]; then
-	mkdir release
+if [ ! -d releases ]; then
+	mkdir releases
 fi
 
-mv INSTALL.html ./release
-mv ReleaseNotes.html ./release
-mv ${DEPLOY_FILE_NAME} ./release
+mv INSTALL.html ./releases
+mv ReleaseNotes.html ./releases
+mv ${DEPLOY_FILE_NAME} ./releases
 
 
 echo "Deploy build complete."
