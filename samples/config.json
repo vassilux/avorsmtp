@@ -1,0 +1,16 @@
+{ 
+	"smtpServer": "smtp.server.com",
+	"smtpPort": 465,
+	"smtpUsername": "userv@server.com",
+	"smtpPassword": "crakcme",
+	"subject": "AVOR event notification",
+	"schedule": 5,
+	"recipients": [
+		"adminv@server.com",
+		"ml@server.com"		
+	],
+	"mongoHost": "127.0.0.1",
+	"InsecureSkipVerify" : true,
+	"UnencryptedAuth": true,
+	"SkipAuth": true
+}
