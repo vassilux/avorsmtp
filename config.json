@@ -1,17 +1,20 @@
 { 
 	"smtpServer": "smtp.gmail.com",
-	"smtpPort": 465,
+	"smtpPort": 587,
 	"smtpUsername": "v.gontcharov@gmail.com",
 	"smtpPassword": "v@s184027_rep",
-	"subject": "AVOR event notification",
+	"subject": "html event notification",
 	"schedule": 5,
+	"templateFile": "samples/email.tpl.sample",
+	"emailFormat": "text/html",
 	"recipients": [
-		"vassili.gontcharov@esifrance.net",
-		"vgontcharov@gmail.com"
+		"anthony.debono@esifrance.net",
+		"v.gontcharov@gmail.com"
 		
 	],
 	"mongoHost": "127.0.0.1",
-	"InsecureSkipVerify" : true,
-	"UnencryptedAuth": true,
-	"SkipAuth": true
+	"notificationsdb": "notifications",
+	"InsecureSkipVerify" : false,
+	"UnencryptedAuth": false,
+	"SkipAuth": false
 }

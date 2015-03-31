@@ -28,7 +28,7 @@ func (mongoWorker *MongoWorker) Open(host string) (err error) {
 	session.SetMode(mgo.Monotonic, true)
 
 	mongoWorker.MongoSession = session
-	database := mongoWorker.MongoSession.DB("notifications")
+	database := mongoWorker.MongoSession.DB(config.Notificationsdb)
 
 	mongoWorker.MongoDatabase = database
 	return nil
@@ -38,6 +38,7 @@ func (mongoWorker *MongoWorker) Close() (err error) {
 	if mongoWorker.MongoSession != nil {
 		mongoWorker.MongoSession.Close()
 	}
+
 	return nil
 }
 

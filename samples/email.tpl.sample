@@ -1,0 +1,20 @@
+<html>
+<body>
+
+<h2>E-mail de notification </h2>
+
+<br>
+Application : {{ .AppId}}
+<br>
+Asterisk id : {{ .AsteriskId}} 
+<br>
+Code : {{ .Code}} 
+<br>
+Données : {{ .Data}} 
+<br>
+Type de notification : {{ .Type}} 
+<br>
+
+Cdt
+</body>
+</html>

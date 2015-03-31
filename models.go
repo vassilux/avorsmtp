@@ -9,7 +9,7 @@ type Event struct {
 	Id         bson.ObjectId `json:"id"              bson:"_id"`
 	AppId      string        `json:"appid"           bson:"appid"`
 	AsteriskId string        `json:"asteriskid"	     bson:"asteriskid"`
-	Name       string        `json:"name"			 bson:"name"`
+	Code       string        `json:"code"			 bson:"code"`
 	Data       string        `json:"data"			 bson:"data"`
 	Type       int           `json:"type"			 bson:"type"`
 }

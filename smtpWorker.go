@@ -36,7 +36,8 @@ const (
 Message : {{ .}}
 
 `
-	EMAIL_SUBJECT = "avorsmtp notification"
+
+//	EMAIL_SUBJECT = "avorsmtp notification"
 )
 
 // Code below from http://golang.org/src/pkg/crypto/tls/handshake_server_test.go
@@ -192,15 +193,24 @@ func NewSmtpWorker(config *Config) *SmtpWorker {
 
 func (smtpWorker *SmtpWorker) buildEmailMessage(event Event) (message []byte, err error) {
 	var docJson bytes.Buffer
-	tj := template.New("jsonTemplate")
-	tj, err = tj.Parse(jsonTemplate)
+	var tj *template.Template
+
+	tj, err = template.ParseFiles(config.TemplateFile)
+
+	if err != nil {
+		tj = template.New("jsonTemplate")
+		tj, err = tj.Parse(jsonTemplate)
+		err = tj.ExecuteTemplate(&docJson, "jsonTemplate", template.HTML(event.Json()))
+		if err != nil {
+			log.Debug("error trying to execute mail template")
+			return nil, err
+		}
+	} else {
+		err = tj.Execute(&docJson, event)
+	}
+
 	if err != nil {
 		log.Debug("error trying to parse mail template")
-		return nil, err
-	}
-	err = tj.ExecuteTemplate(&docJson, "jsonTemplate", template.HTML(event.Json()))
-	if err != nil {
-		log.Debug("error trying to execute mail template")
 		return nil, err
 	}
 
@@ -229,8 +239,8 @@ func (smtpWorker *SmtpWorker) sendGoMail(emailUser *EmailUser, to []string, even
 	if len(to) > 1 {
 		msg.SetHeader("Cc", to[1])
 	}
-	msg.SetHeader("Subject", EMAIL_SUBJECT)
-	msg.SetBody("text/plain", string(emailBody[:]))
+	msg.SetHeader("Subject", smtpWorker.config.Subject)
+	msg.SetBody(smtpWorker.config.EmailFormat, string(emailBody[:]))
 
 	log.Tracef("E-mail body [%s].\n", string(emailBody[:]))
 
@@ -268,8 +278,8 @@ func (smtpWorker *SmtpWorker) sendMailUseUnencryptedAuth(emailUser *EmailUser, t
 	if len(to) > 1 {
 		msg.SetHeader("Cc", to[1])
 	}
-	msg.SetHeader("Subject", EMAIL_SUBJECT)
-	msg.SetBody("text/plain", string(emailBody[:]))
+	msg.SetHeader("Subject", smtpWorker.config.Subject)
+	msg.SetBody(smtpWorker.config.EmailFormat, string(emailBody[:]))
 	//
 	log.Tracef("E-mail body [%s].\n", string(emailBody[:]))
 	//

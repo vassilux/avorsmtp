@@ -18,6 +18,9 @@ type Config struct {
 	InsecureSkipVerify bool
 	UnencryptedAuth    bool
 	SkipAuth           bool
+	TemplateFile       string
+	EmailFormat        string
+	Notificationsdb    string
 }
 
 func NewConfig() (config *Config, err error) {
@@ -31,6 +34,18 @@ func NewConfig() (config *Config, err error) {
 	config = new(Config)
 	if err = json.Unmarshal(file, config); err != nil {
 		return nil, err
+	}
+
+	if config.EmailFormat == "" {
+		config.EmailFormat = "text/plain"
+	}
+
+	if config.Subject == "" {
+		config.Subject = "avorsmtp notification"
+	}
+
+	if config.Notificationsdb == "" {
+		config.Notificationsdb = "notificationsdb"
 	}
 
 	return config, nil
