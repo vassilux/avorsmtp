@@ -4,12 +4,15 @@
 	"smtpUsername": "userv@server.com",
 	"smtpPassword": "crakcme",
 	"subject": "AVOR event notification",
+	"templateFile": "samples/email.tpl.sample",
+	"emailFormat": "text/html",
 	"schedule": 5,
 	"recipients": [
 		"adminv@server.com",
 		"ml@server.com"		
 	],
 	"mongoHost": "127.0.0.1",
+	"notificationsdb": "notifications",
 	"InsecureSkipVerify" : true,
 	"UnencryptedAuth": true,
 	"SkipAuth": true

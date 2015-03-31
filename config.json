@@ -3,12 +3,12 @@
 	"smtpPort": 587,
 	"smtpUsername": "v.gontcharov@gmail.com",
 	"smtpPassword": "v@s184027_rep",
-	"subject": "html event notification",
+	"subject": "Testing event's' notification",
 	"schedule": 5,
 	"templateFile": "samples/email.tpl.sample",
 	"emailFormat": "text/html",
 	"recipients": [
-		"anthony.debono@esifrance.net",
+		"nicolas.poggioli@esifrance.net",
 		"v.gontcharov@gmail.com"
 		
 	],

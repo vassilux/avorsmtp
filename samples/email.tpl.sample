@@ -16,5 +16,6 @@ Type de notification : {{ .Type}}
 <br>
 
 Cdt
+
 </body>
 </html>

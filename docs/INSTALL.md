@@ -35,6 +35,10 @@ Options de configuration de la connexion au serveur smtp
 	"InsecureSkipVerify" : certificat TLS n'est pas verififé si la valeur de l'option est égal à true
 	"UnencryptedAuth": force utiliser une connexion non sécuriser si la valeur de l'option est égal à true
 	"SkipAuth": procedure d'authentification n'est pas utilisé si la valeur de l'option est égal à true
+	
+Paramètre templateFile permet d'utiliser un fichier text ou un fichier en format html pour la génération d'un e-mail.
+
+Paramètre emailFormat definit le format d'e-mail à envoyer par defaut c'est text/plain. Pour envoie d'un e-mail en format html : text/html
 
 ### Note 
 	En cas d'utilsiaiton d'un serveur smtp sur le port 465 merci de voir la configuraiton de relay sur le serveur postfix.
